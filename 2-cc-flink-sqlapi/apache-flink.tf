@@ -195,7 +195,6 @@ resource "confluent_flink_artifact" "main" {
   region           = var.cc_cloud_region
   display_name     = "engine_status_artifact"
   content_format   = "JAR"
-  runtime_language = "Java"
   artifact_file    = "custom-functions/target/custom-functions-1.0.jar"
   environment {
     id = data.confluent_environment.demo.id
