@@ -8,6 +8,8 @@ terraform init
 
 export TF_VAR_confluent_cloud_api_key="XXX"
 export TF_VAR_confluent_cloud_api_secret="YYY"
+export TF_VAR_confluent_cloud_environment_id="env-05rzn6"
+export TF_VAR_confluent_cloud_kafka_cluster_id="lkc-77owpp"
 
 # Generates the execution plan, showing what actions Terraform would take  
 terraform plan  

@@ -2,8 +2,8 @@
 # Confluent Flink - Compute Pool
 # -------------------------------------------------------
 data "confluent_flink_region" "demo" {
-  cloud  = local.cloud
-  region = local.region
+  cloud  = var.cc_cloud_provider
+  region = var.cc_cloud_region
 }
 
 resource "confluent_flink_compute_pool" "demo" {
@@ -12,7 +12,7 @@ resource "confluent_flink_compute_pool" "demo" {
   region       = data.confluent_flink_region.demo.region
   max_cfu      = 10
   environment {
-    id = confluent_environment.demo.id
+    id = data.confluent_environment.demo.id
   }
 }
 
@@ -30,7 +30,7 @@ resource "confluent_service_account" "statements-runner" {
 
 resource "confluent_role_binding" "statements-runner-environment-admin" {
   principal   = "User:${confluent_service_account.statements-runner.id}"
-  crn_pattern = confluent_environment.demo.resource_name
+  crn_pattern = data.confluent_environment.demo.resource_name
   role_name   = "EnvironmentAdmin"
 
   lifecycle {
@@ -51,7 +51,7 @@ resource "confluent_api_key" "statements-runner-flink-api-key" {
     api_version = data.confluent_flink_region.demo.api_version
     kind        = data.confluent_flink_region.demo.kind
     environment {
-      id = confluent_environment.demo.id
+      id = data.confluent_environment.demo.id
     }
   }
   lifecycle {
@@ -67,7 +67,7 @@ resource "confluent_flink_statement" "create-table-location-detailed" {
     id = data.confluent_organization.main.id
   }
   environment {
-    id = confluent_environment.demo.id
+    id = data.confluent_environment.demo.id
   }
   compute_pool {
     id = confluent_flink_compute_pool.demo.id
@@ -75,10 +75,10 @@ resource "confluent_flink_statement" "create-table-location-detailed" {
   principal {
     id = confluent_service_account.statements-runner.id
   }
-  statement = file("./statements/create-table-location-detailed.sql")
+  statement = file("flink-statements/create-table-location-detailed.sql")
   properties = {
-    "sql.current-catalog"  = confluent_environment.demo.display_name
-    "sql.current-database" = confluent_kafka_cluster.demo.display_name
+    "sql.current-catalog"  = data.confluent_environment.demo.display_name
+    "sql.current-database" = data.confluent_kafka_cluster.demo.display_name
   }
   rest_endpoint = data.confluent_flink_region.demo.rest_endpoint
   credentials {
@@ -98,7 +98,7 @@ resource "confluent_flink_statement" "create-table-location-latest" {
     id = data.confluent_organization.main.id
   }
   environment {
-    id = confluent_environment.demo.id
+    id = data.confluent_environment.demo.id
   }
   compute_pool {
     id = confluent_flink_compute_pool.demo.id
@@ -106,10 +106,10 @@ resource "confluent_flink_statement" "create-table-location-latest" {
   principal {
     id = confluent_service_account.statements-runner.id
   }
-  statement = file("./statements/create-table-location-latest.sql")
+  statement = file("flink-statements/create-table-location-latest.sql")
   properties = {
-    "sql.current-catalog"  = confluent_environment.demo.display_name
-    "sql.current-database" = confluent_kafka_cluster.demo.display_name
+    "sql.current-catalog"  = data.confluent_environment.demo.display_name
+    "sql.current-database" = data.confluent_kafka_cluster.demo.display_name
   }
   rest_endpoint = data.confluent_flink_region.demo.rest_endpoint
   credentials {
@@ -129,7 +129,7 @@ resource "confluent_flink_statement" "insert-into-location-detailed" {
     id = data.confluent_organization.main.id
   }
   environment {
-    id = confluent_environment.demo.id
+    id = data.confluent_environment.demo.id
   }
   compute_pool {
     id = confluent_flink_compute_pool.demo.id
@@ -137,10 +137,10 @@ resource "confluent_flink_statement" "insert-into-location-detailed" {
   principal {
     id = confluent_service_account.statements-runner.id
   }
-  statement = file("./statements/insert-into-location-detailed.sql")
+  statement = file("flink-statements/insert-into-location-detailed.sql")
   properties = {
-    "sql.current-catalog"  = confluent_environment.demo.display_name
-    "sql.current-database" = confluent_kafka_cluster.demo.display_name
+    "sql.current-catalog"  = data.confluent_environment.demo.display_name
+    "sql.current-database" = data.confluent_kafka_cluster.demo.display_name
   }
   rest_endpoint = data.confluent_flink_region.demo.rest_endpoint
   credentials {
@@ -160,7 +160,7 @@ resource "confluent_flink_statement" "insert-into-location-latest" {
     id = data.confluent_organization.main.id
   }
   environment {
-    id = confluent_environment.demo.id
+    id = data.confluent_environment.demo.id
   }
   compute_pool {
     id = confluent_flink_compute_pool.demo.id
@@ -168,10 +168,10 @@ resource "confluent_flink_statement" "insert-into-location-latest" {
   principal {
     id = confluent_service_account.statements-runner.id
   }
-  statement = file("./statements/insert-into-location-latest.sql")
+  statement = file("flink-statements/insert-into-location-latest.sql")
   properties = {
-    "sql.current-catalog"  = confluent_environment.demo.display_name
-    "sql.current-database" = confluent_kafka_cluster.demo.display_name
+    "sql.current-catalog"  = data.confluent_environment.demo.display_name
+    "sql.current-database" = data.confluent_kafka_cluster.demo.display_name
   }
   rest_endpoint = data.confluent_flink_region.demo.rest_endpoint
   credentials {
@@ -185,3 +185,28 @@ resource "confluent_flink_statement" "insert-into-location-latest" {
     prevent_destroy = false
   }
 }
+
+# -------------------------------------------------------
+# Confluent Flink - Artifacts Declarations
+# -------------------------------------------------------
+
+resource "confluent_flink_artifact" "main" {
+  cloud            = var.cc_cloud_provider
+  region           = var.cc_cloud_region
+  display_name     = "engine_status_artifact"
+  content_format   = "JAR"
+  runtime_language = "Java"
+  artifact_file    = "custom-functions/target/custom-functions-1.0.jar"
+  environment {
+    id = data.confluent_environment.demo.id
+  }
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+# CREATE FUNCTION EngineStatus AS 'io.confluent.functions.EngineStatus'
+# USING JAR 'confluent-artifact://cfa-0x3yn9';
+
+# SELECT vehicle_id, engine_temperature, EngineStatus(engine_temperature) AS engine_status 
+# FROM `demo_fleet_mgmt_sensors` LIMIT 20;

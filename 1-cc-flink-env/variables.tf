@@ -9,11 +9,6 @@ variable "confluent_cloud_api_secret" {
   sensitive   = true
 }
 
-locals {
-  cloud  = "AWS"
-  region = "eu-central-1"
-}
-
 resource "random_id" "id" {
   byte_length = 4
 }

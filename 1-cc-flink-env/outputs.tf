@@ -25,13 +25,13 @@ output "resource_ids" {
       secret        = confluent_api_key.infrastructure-manager-schema-registry-api-key.secret
     }
 
-    confluent_flink = {
-      cloud  = data.confluent_flink_region.demo.cloud
-      region = data.confluent_flink_region.demo.region
-      id     = confluent_flink_compute_pool.demo.id
-      key    = confluent_api_key.statements-runner-flink-api-key.id
-      secret = confluent_api_key.statements-runner-flink-api-key.secret
-    }
+    # confluent_flink = {
+    #   cloud  = data.confluent_flink_region.demo.cloud
+    #   region = data.confluent_flink_region.demo.region
+    #   id     = confluent_flink_compute_pool.demo.id
+    #   key    = confluent_api_key.statements-runner-flink-api-key.id
+    #   secret = confluent_api_key.statements-runner-flink-api-key.secret
+    # }
   }
   sensitive = true
 }
