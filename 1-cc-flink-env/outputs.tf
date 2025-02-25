@@ -8,21 +8,29 @@ output "resource_ids" {
     app-manager = {
       display_name = confluent_service_account.app-manager.display_name
       id           = confluent_service_account.app-manager.id
-      api_key      = confluent_api_key.app-manager-kafka-api-key.id
-      api_secret   = confluent_api_key.app-manager-kafka-api-key.secret
+      key          = confluent_api_key.app-manager-kafka-api-key.id
+      secret       = confluent_api_key.app-manager-kafka-api-key.secret
     }
 
     app-consumer = {
       display_name = confluent_service_account.app-consumer.display_name
       id           = confluent_service_account.app-consumer.id
-      api_key      = confluent_api_key.app-consumer-kafka-api-key.id
-      api_secret   = confluent_api_key.app-consumer-kafka-api-key.secret
+      key          = confluent_api_key.app-consumer-kafka-api-key.id
+      secret       = confluent_api_key.app-consumer-kafka-api-key.secret
     }
 
     schema_registry = {
       rest_endpoint = data.confluent_schema_registry_cluster.demo.rest_endpoint
-      api_key       = confluent_api_key.infrastructure-manager-schema-registry-api-key.id
-      api_secret    = confluent_api_key.infrastructure-manager-schema-registry-api-key.secret
+      key           = confluent_api_key.infrastructure-manager-schema-registry-api-key.id
+      secret        = confluent_api_key.infrastructure-manager-schema-registry-api-key.secret
+    }
+
+    confluent_flink = {
+      cloud  = data.confluent_flink_region.demo.cloud
+      region = data.confluent_flink_region.demo.region
+      id     = confluent_flink_compute_pool.demo.id
+      key    = confluent_api_key.statements-runner-flink-api-key.id
+      secret = confluent_api_key.statements-runner-flink-api-key.secret
     }
   }
   sensitive = true
