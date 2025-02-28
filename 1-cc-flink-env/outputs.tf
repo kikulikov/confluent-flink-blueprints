@@ -19,6 +19,13 @@ output "resource_ids" {
       secret       = confluent_api_key.app-consumer-kafka-api-key.secret
     }
 
+    app-producer = {
+      display_name = confluent_service_account.app-producer.display_name
+      id           = confluent_service_account.app-producer.id
+      key          = confluent_api_key.app-producer-kafka-api-key.id
+      secret       = confluent_api_key.app-producer-kafka-api-key.secret
+    }
+
     schema_registry = {
       rest_endpoint = data.confluent_schema_registry_cluster.demo.rest_endpoint
       key           = confluent_api_key.infrastructure-manager-schema-registry-api-key.id
