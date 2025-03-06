@@ -9,10 +9,10 @@ public class EngineStatus extends ScalarFunction {
   private static final String CODE_OK = "OK";
 
   public String eval(Integer engineTemperature) {
-    if (engineTemperature > 230) {
+    if (engineTemperature > 240) {
       return CODE_DANGER;
     }
-    if (engineTemperature > 210) {
+    if (engineTemperature > 220) {
       return CODE_WARNING;
     }
     return CODE_OK;

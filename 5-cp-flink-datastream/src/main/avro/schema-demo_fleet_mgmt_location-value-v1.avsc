@@ -1,0 +1,39 @@
+{
+  "connect.name": "fleet_mgmt.fleet_mgmt_location",
+  "fields": [
+    {
+      "name": "vehicle_id",
+      "type": "int"
+    },
+    {
+      "name": "location",
+      "type": {
+        "connect.name": "fleet_mgmt.location",
+        "fields": [
+          {
+            "name": "latitude",
+            "type": "double"
+          },
+          {
+            "name": "longitude",
+            "type": "double"
+          }
+        ],
+        "name": "location",
+        "type": "record"
+      }
+    },
+    {
+      "name": "ts",
+      "type": {
+        "connect.name": "org.apache.kafka.connect.data.Timestamp",
+        "connect.version": 1,
+        "logicalType": "timestamp-millis",
+        "type": "long"
+      }
+    }
+  ],
+  "name": "fleet_mgmt_location",
+  "namespace": "fleet_mgmt",
+  "type": "record"
+}

@@ -6,7 +6,7 @@
   },
   "spec": {
     "image": "confluentinc/cp-flink:1.20.0-cp1",
-    "flinkVersion": "v1_19",
+    "flinkVersion": "v1_20",
     "serviceAccount": "flink",
     "jobManager": {
       "resource": {

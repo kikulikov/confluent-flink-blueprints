@@ -12,16 +12,36 @@ gradle wrapper
 
 https://github.com/confluentinc/cp-flink-e2e
 
-## Environment
+### Install minio CLI
+https://min.io/docs/minio/linux/reference/minio-mc.html#quickstart
+brew install minio/stable/mc
 
-```properties
-ORG_ID=4c60b3e5-72c0-4c78-9677-0cc97ff37d11
-ENV_ID=env-05rzn6
-CLOUD_PROVIDER=AWS
-CLOUD_REGION=eu-central-1
-COMPUTE_POOL_ID=lfcp-kz6p52
-FLINK_API_KEY=XXX
-FLINK_API_SECRET=YYY
+
+### Add the MinIO Operator Repo to Helm
+https://min.io/docs/minio/kubernetes/upstream/operations/install-deploy-manage/deploy-operator-helm.html#install-the-minio-operator-using-helm-charts
+
+helm repo add minio-operator https://operator.min.io
+
+helm install --namespace minio-operator --create-namespace \
+operator minio-operator/operator
+
+mc cp build/libs/demo-0.0.1-SNAPSHOT.jar dev-minio/flink/demo-0.0.1-SNAPSHOT.jar
+
+```sh
+# Open port forwarding to CMF.
+kubectl port-forward -n flink-manager svc/cmf-service 8080:80
+
+# Create Environment
+confluent flink environment create development --kubernetes-namespace flink --url http://localhost:8080
+
+# Deploy example Flink jobs
+confluent flink application create --environment development --url http://localhost:8080 kafka-deployment.json
+
+# Access Web UI
+confluent flink application web-ui-forward --environment development kafka-reader-writer-example --url http://localhost:8080
+
+# Delete the application
+confluent flink application delete --environment development basic-example --url http://localhost:8080
 ```
 
 ## TODO
@@ -29,6 +49,16 @@ FLINK_API_SECRET=YYY
 - Unit Tests
 - IT Tests
 - Run scripts / profiles
+
+```shell
+java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_mgmt_sensors-value-v1.avsc src/main/java/
+java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_mgmt_location-value-v1.avsc src/main/java/
+
+confluent flink application delete --environment development --url http://localhost:8080 kafka-reader-writer-example --force
+./gradlew clean spotlessApply shadowJar
+mc cp build/libs/demo-0.0.1-SNAPSHOT-all.jar dev-minio/flink/demo-0.0.1-SNAPSHOT-all.jar
+confluent flink application create --environment development --url http://localhost:8080 kafka-deployment.json
+```
 
 ## Resources
 

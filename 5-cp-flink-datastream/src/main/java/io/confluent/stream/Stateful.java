@@ -15,22 +15,16 @@ public class Stateful extends KeyedProcessFunction<String, String, String> {
 
     @Override
     public void open(Configuration config) {
-        ValueStateDescriptor<Tuple2<Long, byte[]>> descriptor =
-                new ValueStateDescriptor<>(
-                        "data", // the state name
-                        TypeInformation.of(
-                                new TypeHint<Tuple2<Long, byte[]>>() {}), // type information
-                        Tuple2.of(
-                                0L,
-                                new byte[50])); // default value of the state, if nothing was set
+        ValueStateDescriptor<Tuple2<Long, byte[]>> descriptor = new ValueStateDescriptor<>(
+                "data", // the state name
+                TypeInformation.of(new TypeHint<Tuple2<Long, byte[]>>() {}), // type information
+                Tuple2.of(0L, new byte[50])); // default value of the state, if nothing was set
         data = getRuntimeContext().getState(descriptor);
     }
 
     @Override
     public void processElement(
-            String value,
-            KeyedProcessFunction<String, String, String>.Context ctx,
-            Collector<String> out)
+            String value, KeyedProcessFunction<String, String, String>.Context ctx, Collector<String> out)
             throws Exception {
         data.update(new Tuple2<>(0L, new byte[50]));
     }

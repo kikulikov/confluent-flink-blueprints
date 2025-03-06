@@ -1,9 +1,10 @@
+# Deploys a new Namespace for the MinIO Pod
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: minio
+  name: minio-dev # Change this value if you want a different namespace name
   labels:
-    name: minio
+    name: minio-dev # Change this value to match metadata.name
 ---
 apiVersion: v1
 kind: Pod
@@ -11,7 +12,7 @@ metadata:
   labels:
     app: minio
   name: minio
-  namespace: minio
+  namespace: minio-dev # Change this value to match the namespace metadata.name
 spec:
   containers:
     - name: minio
@@ -34,7 +35,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio-service
-  namespace: minio
+  namespace: minio-dev # Change this value to match the namespace metadata.name
 spec:
   selector:
     app: minio

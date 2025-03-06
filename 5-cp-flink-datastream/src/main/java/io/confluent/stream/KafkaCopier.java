@@ -16,46 +16,57 @@ import org.slf4j.LoggerFactory;
 
 public class KafkaCopier {
 
+    private static final String JAAS_STRING =
+            "org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';";
     private static final Logger log = LoggerFactory.getLogger(KafkaCopier.class);
 
     public static void main(String[] args) throws Exception {
         log.info("Starting Kafka Copier...");
-        ParameterTool parameters = ParameterTool.fromArgs(args);
-        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.disableOperatorChaining();
+
+        final var parameters = ParameterTool.fromArgs(args);
+        final var env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(parameters.getInt("parallelism", 2));
         env.enableCheckpointing(1000);
+        env.disableOperatorChaining();
 
-        KafkaSource<String> source =
-                KafkaSource.<String>builder()
-                        .setBootstrapServers(parameters.get("brokers"))
-                        .setTopics(parameters.get("in-topic"))
-                        .setStartingOffsets(OffsetsInitializer.earliest())
-                        .setValueOnlyDeserializer(new SimpleStringSchema())
-                        .build();
+        final var jaasIn =
+                String.format(JAAS_STRING, parameters.get("consumer-key"), parameters.get("consumer-secret"));
+
+        KafkaSource<String> source = KafkaSource.<String>builder()
+                .setBootstrapServers(parameters.get("brokers"))
+                .setGroupId(parameters.get("consumer-group"))
+                .setProperty("security.protocol", "SASL_SSL")
+                .setProperty("sasl.jaas.config", jaasIn)
+                .setProperty("sasl.mechanism", "PLAIN")
+                .setTopics(parameters.get("in-topic"))
+                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setValueOnlyDeserializer(new SimpleStringSchema())
+                .build();
 
         log.info("Reading from Kafka topic: " + parameters.get("in-topic"));
 
-        DataStreamSource<String> data =
-                env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source");
-        data.keyBy(
-                        (KeySelector<String, String>)
-                                value -> {
-                                    log.info("Keying by: " + value);
-                                    return value;
-                                })
+        final DataStreamSource<String> data = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source");
+
+        data.keyBy((KeySelector<String, String>) value -> {
+                    log.info("Keying by: " + value);
+                    return value;
+                })
                 .process(new Stateful());
 
-        KafkaSink<String> sink =
-                KafkaSink.<String>builder()
-                        .setBootstrapServers(parameters.get("brokers"))
-                        .setRecordSerializer(
-                                KafkaRecordSerializationSchema.builder()
-                                        .setTopic(parameters.get("out-topic"))
-                                        .setValueSerializationSchema(new SimpleStringSchema())
-                                        .build())
-                        .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
-                        .build();
+        final var jaasOut =
+                String.format(JAAS_STRING, parameters.get("producer-key"), parameters.get("producer-secret"));
+
+        KafkaSink<String> sink = KafkaSink.<String>builder()
+                .setBootstrapServers(parameters.get("brokers"))
+                .setProperty("security.protocol", "SASL_SSL")
+                .setProperty("sasl.jaas.config", jaasOut)
+                .setProperty("sasl.mechanism", "PLAIN")
+                .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                        .setTopic(parameters.get("out-topic"))
+                        .setValueSerializationSchema(new SimpleStringSchema())
+                        .build())
+                .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                .build();
 
         data.sinkTo(sink);
 
