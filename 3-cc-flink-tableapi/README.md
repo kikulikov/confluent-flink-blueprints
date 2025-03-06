@@ -3,11 +3,14 @@
 ## Gradle
 
 ```bash
-gradle wrapper
+# Generate or update the Gradle Wrapper scripts  
+gradle wrapper  
 
+# Run Spotless to automatically format and fix code style issues  
 ./gradlew spotlessApply
-./gradlew build
 
+# Build the project, compiling and packaging the code  
+./gradlew build
 ```
 
 ## Environment

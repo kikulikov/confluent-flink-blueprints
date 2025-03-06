@@ -16,7 +16,7 @@ java {
 
 spotless {
     java {
-        googleJavaFormat().aosp().reflowLongStrings(false)
+        palantirJavaFormat()
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
@@ -42,7 +42,7 @@ dependencies {
 }
 
 springBoot {
-    mainClass.set("io.confluent.demo.DemoApplication")
+    mainClass.set("io.confluent.select.SampleSelectApplication")
 }
 
 tasks.withType<Test> {

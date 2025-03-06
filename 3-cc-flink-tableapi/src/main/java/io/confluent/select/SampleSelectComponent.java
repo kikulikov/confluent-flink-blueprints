@@ -15,17 +15,17 @@ import org.springframework.stereotype.Component;
 public class SampleSelectComponent implements ApplicationRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(SampleSelectComponent.class);
 
-    @Autowired private TableEnvironment tableEnvironment;
+    @Autowired
+    private TableEnvironment tableEnvironment;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         LOGGER.info("Running...");
 
-        final var tableResult =
-                tableEnvironment
-                        .from("demo_fleet_mgmt_sensors")
-                        .select($("*"), $("$rowtime"))
-                        .execute();
+        final var tableResult = tableEnvironment
+                .from("demo_fleet_mgmt_sensors")
+                .select($("*"), $("$rowtime"))
+                .execute();
 
         ConfluentTools.printMaterialized(tableResult, 100);
     }

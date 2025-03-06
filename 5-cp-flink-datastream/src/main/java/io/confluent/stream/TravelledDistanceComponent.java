@@ -1,6 +1,12 @@
 package io.confluent.stream;
 
 import fleet_mgmt.fleet_mgmt_sensors;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.stream.StreamSupport;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -15,27 +21,27 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFuncti
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.stream.StreamSupport;
-
-/**
- * https://leetcode.com/problems/count-salary-categories/description/
- */
 public class TravelledDistanceComponent {
 
     private static final String JAAS_STRING =
             "org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';";
-    // private static final Logger LOGGER = LoggerFactory.getLogger(SensorsCategoriesComponent.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SensorsCategoriesComponent.class);
 
     private static final DateTimeFormatter formatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
+    private static final EmbeddedRocksDBStateBackend STATE_BACKEND =
+        new EmbeddedRocksDBStateBackend(true);
+
+    private static final FileSystemCheckpointStorage CHECKPOINT_STORAGE =
+        new FileSystemCheckpointStorage("file:///tmp/flink-checkpoints");
+
     public void exec(String[] args) throws Exception {
+        LOGGER.info("Starting...");
 
         final var parameters = ParameterTool.fromArgs(args);
         final var env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -43,9 +49,9 @@ public class TravelledDistanceComponent {
         env.enableCheckpointing(60_000);
         env.disableOperatorChaining();
         // Set file-based checkpoint storage to avoid memory limits
-        env.setStateBackend(new EmbeddedRocksDBStateBackend(true));
+        env.setStateBackend(STATE_BACKEND);
         env.getCheckpointConfig()
-                .setCheckpointStorage(new FileSystemCheckpointStorage("file:///tmp/flink-checkpoints"));
+                .setCheckpointStorage(CHECKPOINT_STORAGE);
 
         final var jaasIn =
                 String.format(JAAS_STRING, parameters.get("consumer.key"), parameters.get("consumer.secret"));
@@ -74,26 +80,46 @@ public class TravelledDistanceComponent {
         final DataStreamSource<GenericRecord> data = env.fromSource(
                 source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10)), "Kafka Source");
 
-        data.filter(record -> getAverageRpm(record) > 4900 && getEngineTemp(record) > 240)
+        // higher than 5% threshold
+        data.filter(record -> getAverageRpm(record) >= 4750 && getEngineTemp(record) >= 240)
                 .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
-                .process(new ProcessAllWindowFunction<GenericRecord, String, TimeWindow>() {
-                    @Override
-                    public void process(Context context, Iterable<GenericRecord> elements, Collector<String> out) {
-                        final TimeWindow window = context.window();
+                .process(getUsage("HIGH USAGE"))
+                .print();
 
-                        final var windowStart = formatter.format(Instant.ofEpochMilli(window.getStart()));
-                        final var windowEnd = formatter.format(Instant.ofEpochMilli(window.getEnd()));
-                        final var count = StreamSupport.stream(elements.spliterator(), false)
-                                .count();
-                        final var result = String.format("%s, %s, %s, %d", windowStart, windowEnd, "HIGH USAGE", count);
+        // between 5% to 20% threshold
+        data.filter(record -> getAverageRpm(record) >= 4000
+                        && getAverageRpm(record) < 4750
+                        && getEngineTemp(record) >= 200
+                        && getEngineTemp(record) < 240)
+                .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
+                .process(getUsage("NORMAL USAGE"))
+                .print();
 
-                        out.collect(result);
-                    }
-                })
+        // lower than 20% threshold
+        data.filter(record -> getAverageRpm(record) < 4000 && getEngineTemp(record) < 200)
+                .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
+                .process(getUsage("LOW USAGE"))
                 .print();
 
         // Execute program, beginning computation.
         env.execute("Kafka Sensors");
+    }
+
+    private static ProcessAllWindowFunction<GenericRecord, String, TimeWindow> getUsage(final String usage) {
+        return new ProcessAllWindowFunction<>() {
+            @Override
+            public void process(Context context, Iterable<GenericRecord> elements, Collector<String> out) {
+                final TimeWindow window = context.window();
+
+                final var windowStart = formatter.format(Instant.ofEpochMilli(window.getStart()));
+                final var windowEnd = formatter.format(Instant.ofEpochMilli(window.getEnd()));
+                final var count =
+                        StreamSupport.stream(elements.spliterator(), false).count();
+                final var result = String.format("%s, %s, %s, %d", windowStart, windowEnd, usage, count);
+
+                out.collect(result);
+            }
+        };
     }
 
     private static Integer getAverageRpm(GenericRecord value) {

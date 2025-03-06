@@ -1,4 +1,4 @@
-package io.confluent.stream;
+package io.confluent.vehicles;
 
 import io.confluent.flink.plugin.ConfluentSettings;
 import java.util.UUID;
@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class SampleStreamApplication {
+public class VehicleStatsApplication {
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -21,7 +21,7 @@ public class SampleStreamApplication {
     private String databaseName;
 
     public static void main(String[] args) {
-        SpringApplication.run(SampleStreamApplication.class, args);
+        SpringApplication.run(VehicleStatsApplication.class, args);
     }
 
     @Bean

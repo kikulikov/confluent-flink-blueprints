@@ -21,20 +21,24 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFuncti
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * Write a solution to calculate the number of vehicles for each engine usage category: HIGH, NORMAL, LOW
  * https://leetcode.com/problems/count-salary-categories/description/
  */
 public class SensorsCategoriesComponent {
 
     private static final String JAAS_STRING =
             "org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';";
-    // private static final Logger LOGGER = LoggerFactory.getLogger(SensorsCategoriesComponent.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SensorsCategoriesComponent.class);
 
     private static final DateTimeFormatter formatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
     public void exec(String[] args) throws Exception {
+        LOGGER.info("Starting...");
 
         final var parameters = ParameterTool.fromArgs(args);
         final var env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -73,26 +77,46 @@ public class SensorsCategoriesComponent {
         final DataStreamSource<GenericRecord> data = env.fromSource(
                 source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10)), "Kafka Source");
 
-        data.filter(record -> getAverageRpm(record) > 4900 && getEngineTemp(record) > 240)
+        // higher than 5% threshold
+        data.filter(record -> getAverageRpm(record) >= 4750 && getEngineTemp(record) >= 240)
                 .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
-                .process(new ProcessAllWindowFunction<GenericRecord, String, TimeWindow>() {
-                    @Override
-                    public void process(Context context, Iterable<GenericRecord> elements, Collector<String> out) {
-                        final TimeWindow window = context.window();
+                .process(getUsage("HIGH USAGE"))
+                .print();
 
-                        final var windowStart = formatter.format(Instant.ofEpochMilli(window.getStart()));
-                        final var windowEnd = formatter.format(Instant.ofEpochMilli(window.getEnd()));
-                        final var count = StreamSupport.stream(elements.spliterator(), false)
-                                .count();
-                        final var result = String.format("%s, %s, %s, %d", windowStart, windowEnd, "HIGH USAGE", count);
+        // between 5% to 20% threshold
+        data.filter(record -> getAverageRpm(record) >= 4000
+                        && getAverageRpm(record) < 4750
+                        && getEngineTemp(record) >= 200
+                        && getEngineTemp(record) < 240)
+                .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
+                .process(getUsage("NORMAL USAGE"))
+                .print();
 
-                        out.collect(result);
-                    }
-                })
+        // lower than 20% threshold
+        data.filter(record -> getAverageRpm(record) < 4000 && getEngineTemp(record) < 200)
+                .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
+                .process(getUsage("LOW USAGE"))
                 .print();
 
         // Execute program, beginning computation.
         env.execute("Kafka Sensors");
+    }
+
+    private static ProcessAllWindowFunction<GenericRecord, String, TimeWindow> getUsage(final String usage) {
+        return new ProcessAllWindowFunction<>() {
+            @Override
+            public void process(Context context, Iterable<GenericRecord> elements, Collector<String> out) {
+                final TimeWindow window = context.window();
+
+                final var windowStart = formatter.format(Instant.ofEpochMilli(window.getStart()));
+                final var windowEnd = formatter.format(Instant.ofEpochMilli(window.getEnd()));
+                final var count =
+                        StreamSupport.stream(elements.spliterator(), false).count();
+                final var result = String.format("%s, %s, %s, %d", windowStart, windowEnd, usage, count);
+
+                out.collect(result);
+            }
+        };
     }
 
     private static Integer getAverageRpm(GenericRecord value) {

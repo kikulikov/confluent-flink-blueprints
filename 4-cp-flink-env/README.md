@@ -1,5 +1,8 @@
 # Confluent Manager for Apache Flink
 
+TODO flink modes explained
+TODO autoscaler
+
 https://docs.confluent.io/platform/current/flink/get-started.html#
 
 ## Prerequisites 
