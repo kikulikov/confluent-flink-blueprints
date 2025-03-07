@@ -1,12 +1,14 @@
 plugins {
-    java
+    id("java")
+    id("application")
+    id("com.gradleup.shadow") version "9.0.0-beta9"
     id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.0.2"
 }
 
 group = "io.confluent"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 
 java {
     toolchain {
@@ -43,6 +45,16 @@ dependencies {
 
 springBoot {
     mainClass.set("io.confluent.select.SampleSelectApplication")
+}
+
+application {
+    mainClass.set("io.confluent.select.SampleSelectApplication")
+}
+
+tasks.jar {
+    manifest {
+        attributes("Main-Class" to "io.confluent.select.SampleSelectApplication")
+    }
 }
 
 tasks.withType<Test> {

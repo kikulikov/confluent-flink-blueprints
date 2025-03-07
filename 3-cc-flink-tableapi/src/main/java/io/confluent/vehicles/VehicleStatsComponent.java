@@ -29,7 +29,7 @@ public class VehicleStatsComponent implements ApplicationRunner {
     private static final int NUMBER_OF_BUCKETS = 1;
     private static final ApiExpression TUMBLE_SIZE = lit(10).minutes();
 
-  private static final Schema STATS_SCHEMA = Schema.newBuilder()
+    private static final Schema STATS_SCHEMA = Schema.newBuilder()
             .column("usage_category", DataTypes.STRING().notNull())
             .column("vehicle_count", DataTypes.BIGINT())
             .column("window_start", DataTypes.STRING())
@@ -40,6 +40,7 @@ public class VehicleStatsComponent implements ApplicationRunner {
     private static final ConfluentTableDescriptor STATS_DESCRIPTOR = ConfluentTableDescriptor.forManaged()
             .distributedInto(NUMBER_OF_BUCKETS)
             .option("kafka.retention.time", "2 d")
+            .option("value.fields-include", "ALL")
             .schema(STATS_SCHEMA)
             .build();
 

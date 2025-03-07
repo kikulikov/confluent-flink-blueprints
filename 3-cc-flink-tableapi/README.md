@@ -11,9 +11,18 @@ gradle wrapper
 
 # Build the project, compiling and packaging the code  
 ./gradlew build
+
+# Create a fat JAR with all dependencies using the Shadow plugin  
+./gradlew shadowJar
 ```
 
-## Environment
+## Console Environment
+
+```properties
+java -cp my-app.jar com.example.MainClass
+```
+
+## IntelliJ IDEA Environment
 
 ```properties
 ORG_ID=4c60b3e5-72c0-4c78-9677-0cc97ff37d11
