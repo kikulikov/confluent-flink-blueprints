@@ -1,13 +1,27 @@
 # Table API
 
+## Prerequisites
+
+```shell
+confluent login
+
+confluent environment list
+confluent environment use env-05rzn6
+
+confluent kafka cluster list
+confluent kafka cluster use lkc-77owpp
+
+confluent kafka topic create demo_fleet_mgmt_vehicle_stats_datastream --partitions 1 --if-not-exists
+```
+
 ## Gradle
 
 ```bash
 gradle wrapper
 
+./gradlew clean
 ./gradlew spotlessApply
 ./gradlew build
-
 ```
 
 https://github.com/confluentinc/cp-flink-e2e
@@ -53,6 +67,7 @@ confluent flink application delete --environment development basic-example --url
 ```shell
 java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_mgmt_sensors-value-v1.avsc src/main/java/
 java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_mgmt_location-value-v1.avsc src/main/java/
+java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-vehicle-stats-value.avsc src/main/java/
 
 confluent flink application delete --environment development --url http://localhost:8080 kafka-reader-writer-example --force
 ./gradlew clean spotlessApply build

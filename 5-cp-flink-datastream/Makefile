@@ -27,6 +27,9 @@ build:
 	java -jar avro-tools-1.12.0.jar compile schema \
     src/main/avro/schema-demo_fleet_mgmt_location-value-v1.avsc src/main/java/ && echo
 
+	java -jar avro-tools-1.12.0.jar compile schema \
+    src/main/avro/schema-vehicle-stats-value.avsc src/main/java/ && echo
+
 	./gradlew clean spotlessApply build
 
 # Upload JAR to MinIO

@@ -64,11 +64,12 @@ public class VehicleStatsComponent implements ApplicationRunner {
 
         final Table processNormal = tableEnvironment
                 .from(DEMO_FLEET_MGMT_SENSORS)
-                .filter($("average_rpm")
-                        .isGreater(lit(4000))
-                        .and($("engine_temperature").isGreater(lit(200)))
-                        .and($("average_rpm").isLess(lit(4750)))
-                        .and($("engine_temperature").isLess(lit(240))))
+                .filter(($("average_rpm")
+                                .isGreater(lit(4000))
+                                .and($("average_rpm").isLess(lit(4750))))
+                        .or($("engine_temperature")
+                                .isGreater(lit(200))
+                                .and($("engine_temperature").isLess(lit(240)))))
                 .window(Tumble.over(TUMBLE_SIZE).on($("$rowtime")).as("w"))
                 .groupBy($("w"))
                 .select(getOutputFields("NORMAL"));
@@ -92,13 +93,12 @@ public class VehicleStatsComponent implements ApplicationRunner {
     }
 
     private static Expression[] getOutputFields(String category) {
-        final Expression[] outputFields = {
+        return new Expression[] {
             lit(category).as("usage_category"),
             $("vehicle_id").count().as("vehicle_count"),
             dateFormat($("w").start(), TS_FORMAT).as("window_start"),
             dateFormat($("w").end(), TS_FORMAT).as("window_end")
         };
-        return outputFields;
     }
 
     public void ensureTableExists() {

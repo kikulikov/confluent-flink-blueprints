@@ -11,7 +11,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.specific.SpecificRecord;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -23,8 +22,8 @@ import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsIni
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
 import org.apache.flink.formats.avro.registry.confluent.ConfluentRegistryAvroDeserializationSchema;
 import org.apache.flink.formats.avro.registry.confluent.ConfluentRegistryAvroSerializationSchema;
+import org.apache.flink.formats.avro.typeutils.GenericRecordAvroTypeInfo;
 import org.apache.flink.runtime.state.storage.FileSystemCheckpointStorage;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
@@ -33,10 +32,6 @@ import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Write a solution to calculate the number of vehicles for each engine usage category: HIGH, NORMAL, LOW
- * https://leetcode.com/problems/count-salary-categories/description/
- */
 public class VehicleStatsComponent2 {
 
     private static final String JAAS_STRING =
@@ -75,10 +70,9 @@ public class VehicleStatsComponent2 {
         final var env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(parameters.getInt("parallelism", 2));
         env.enableCheckpointing(60_000);
-        env.disableOperatorChaining();
-//        env.getConfig().disableGenericTypes();
+        // env.getConfig().disableGenericTypes();
         env.getConfig().enableForceAvro();
-        env.getConfig().getSerializerConfig()..registerTypeWithSerializer(MyCustomType.class, new MyCustomSerializer());
+        env.disableOperatorChaining();
 
         // Set file-based checkpoint storage to avoid memory limits
         env.setStateBackend(new EmbeddedRocksDBStateBackend(true));
@@ -131,20 +125,19 @@ public class VehicleStatsComponent2 {
                 .build();
 
         // Define source with watermarks
-        final DataStreamSource<GenericRecord> data = env.fromSource(
-                source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10)), "Kafka Source");
+        final var data = env.fromSource(
+                        source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(10)), "Kafka Source")
+                .returns(new GenericRecordAvroTypeInfo(fleet_mgmt_sensors.getClassSchema()));
 
         // higher than 5% threshold
-        data.filter(record -> getAverageRpm(record) >= 4750 && getEngineTemp(record) >= 240)
+        data.filter(record -> getAverageRpm(record) > 4750 && getEngineTemp(record) > 240)
                 .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
                 .process(getUsage("HIGH"))
                 .sinkTo(sink);
 
         // between 5% to 20% threshold
-        data.filter(record -> getAverageRpm(record) > 4000
-                        && getAverageRpm(record) < 4750
-                        && getEngineTemp(record) > 200
-                        && getEngineTemp(record) < 240)
+        data.filter(record -> (getAverageRpm(record) > 4000 && getAverageRpm(record) <= 4750)
+                        || (getEngineTemp(record) > 200 && getEngineTemp(record) <= 240))
                 .windowAll(TumblingEventTimeWindows.of(Duration.ofMinutes(10)))
                 .process(getUsage("NORMAL"))
                 .sinkTo(sink);
