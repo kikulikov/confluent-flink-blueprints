@@ -2,7 +2,7 @@
   "apiVersion": "cmf.confluent.io/v1alpha1",
   "kind": "FlinkApplication",
   "metadata": {
-    "name": "kafka-reader-writer-example"
+    "name": "kafka-example"
   },
   "spec": {
     "image": "confluentinc/cp-flink:1.20.0-cp1-java17",
@@ -48,25 +48,26 @@
               "command": [
                 "/bin/sh",
                 "-c",
-                "mc alias set dev-minio http://minio-service.minio-dev.svc.cluster.local:9000 minioadmin minioadmin && mc cp dev-minio/flink/demo-0.0.1-SNAPSHOT-all.jar /opt/flink/downloads/flink-examples-streaming.jar"
+                "mc alias set dev-minio http://minio-service.minio-dev.svc.cluster.local:9000 minioadmin minioadmin && mc cp dev-minio/flink/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar /opt/flink/downloads/flink-examples-streaming.jar"
               ]
             }
           ]
         }
       },
       "resource": {
-        "memory": "2048m",
-        "cpu": 1
+        "memory": "1024m",
+        "cpu": 0.5
       }
     },
     "taskManager": {
       "resource": {
-        "memory": "2048m",
-        "cpu": 1
+        "memory": "1024m",
+        "cpu": 0.5
       }
     },
     "job": {
       "jarURI": "local:///opt/flink/downloads/flink-examples-streaming.jar",
+      "entryClass": "io.confluent.vehicles.VehicleStatsApplication",
       "args": [
         "--brokers",
         "pkc-7xoy1.eu-central-1.aws.confluent.cloud:9092",
@@ -77,7 +78,7 @@
         "--in.topic",
         "demo_fleet_mgmt_sensors",
         "--out.topic",
-        "demo_fleet_mgmt_sensors_stats",
+        "demo_fleet_mgmt_vehicle_stats_datastream",
         "--parallelism",
         "1",
         "--consumer.key",

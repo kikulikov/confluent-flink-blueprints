@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "name": "VehicleStats",
+  "namespace": "io.confluent.model",
+  "fields": [
+    {
+      "name": "usage_category",
+      "type": "string"
+    },
+    {
+      "name": "vehicle_count",
+      "type": ["null", "long"],
+      "default": null
+    },
+    {
+      "name": "window_start",
+      "type": ["null", "string"],
+      "default": null
+    },
+    {
+      "name": "window_end",
+      "type": ["null", "string"],
+      "default": null
+    }
+  ]
+}

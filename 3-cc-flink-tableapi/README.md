@@ -1,4 +1,4 @@
-# Table API
+# Flink Table API Showcase
 
 ## Gradle
 
@@ -6,20 +6,35 @@
 # Generate or update the Gradle Wrapper scripts  
 gradle wrapper  
 
+# Clean previous build outputs
+./gradlew clean
+
 # Run Spotless to automatically format and fix code style issues  
 ./gradlew spotlessApply
 
 # Build the project, compiling and packaging the code  
 ./gradlew build
 
-# Create a fat JAR with all dependencies using the Shadow plugin  
-./gradlew shadowJar
+# Clean previous builds, format code, and create a fat JAR
+./gradlew clean spotlessApply build
 ```
 
-## Console Environment
+## Command Line
 
-```properties
-java -cp my-app.jar com.example.MainClass
+```shell
+# Submit the application to Confluent Cloud
+java -cp build/libs/cc-flink-tableapi-0.0.2-SNAPSHOT-all.jar io.confluent.vehicles.VehicleStatsApplication
+```
+
+## Flink Shell
+
+```shell
+# Start a Confluent Flink shell session  
+confluent flink shell --compute-pool lfcp-jg7jom --environment env-05rzn6  
+
+# Then query all records from the table  
+> SELECT * FROM `demo_fleet_mgmt_vehicle_stats_table_api`;
+
 ```
 
 ## IntelliJ IDEA Environment
@@ -29,7 +44,7 @@ ORG_ID=4c60b3e5-72c0-4c78-9677-0cc97ff37d11
 ENV_ID=env-05rzn6
 CLOUD_PROVIDER=AWS
 CLOUD_REGION=eu-central-1
-COMPUTE_POOL_ID=lfcp-kz6p52
+COMPUTE_POOL_ID=lfcp-jg7jom
 FLINK_API_KEY=XXX
 FLINK_API_SECRET=YYY
 ```
@@ -38,7 +53,8 @@ FLINK_API_SECRET=YYY
 
 - Unit Tests
 - IT Tests
-- Run scripts / profiles
+- Run scripts
+- Spring profiles
 
 ## Resources
 

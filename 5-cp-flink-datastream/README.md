@@ -25,7 +25,7 @@ helm repo add minio-operator https://operator.min.io
 helm install --namespace minio-operator --create-namespace \
 operator minio-operator/operator
 
-mc cp build/libs/demo-0.0.1-SNAPSHOT.jar dev-minio/flink/demo-0.0.1-SNAPSHOT.jar
+mc cp build/libs/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar dev-minio/flink/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar
 
 ```sh
 # Open port forwarding to CMF.
@@ -35,7 +35,7 @@ kubectl port-forward -n flink-manager svc/cmf-service 8080:80
 confluent flink environment create development --kubernetes-namespace flink --url http://localhost:8080
 
 # Deploy example Flink jobs
-confluent flink application create --environment development --url http://localhost:8080 kafka-deployment.json
+confluent flink application create --environment development --url http://localhost:8080 deploy-sample-select.json
 
 # Access Web UI
 confluent flink application web-ui-forward --environment development kafka-reader-writer-example --url http://localhost:8080
@@ -55,9 +55,9 @@ java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_m
 java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_mgmt_location-value-v1.avsc src/main/java/
 
 confluent flink application delete --environment development --url http://localhost:8080 kafka-reader-writer-example --force
-./gradlew clean spotlessApply shadowJar
-mc cp build/libs/demo-0.0.1-SNAPSHOT-all.jar dev-minio/flink/demo-0.0.1-SNAPSHOT-all.jar
-confluent flink application create --environment development --url http://localhost:8080 kafka-deployment.json
+./gradlew clean spotlessApply build
+mc cp build/libs/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar dev-minio/flink/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar
+confluent flink application create --environment development --url http://localhost:8080 deploy-sample-select.json
 ```
 
 ## Resources

@@ -1,15 +1,16 @@
 # Makefile for Flink application deployment
+
 # Variables
 ENVIRONMENT = development
 FLINK_URL = http://localhost:8080
-APP_NAME = kafka-reader-writer-example
-JAR_NAME = demo-0.0.1-SNAPSHOT-all.jar
+JAR_NAME = cp-flink-datastream-0.0.1-SNAPSHOT-all.jar
 MINIO_BUCKET = dev-minio/flink
-DEPLOYMENT_FILE = kafka-deployment.json
+DEPLOYMENT_FILE ?= deploy-sample-select.json
+APP_NAME = kafka-example
 
 # Default target
 .PHONY: all
-all: build upload create
+all: build
 
 # Delete existing application
 .PHONY: delete
@@ -21,24 +22,28 @@ delete:
 .PHONY: build
 build:
 	java -jar avro-tools-1.12.0.jar compile schema \
-    src/main/avro/schema-demo_fleet_mgmt_sensors-value-v1.avsc src/main/java/
+    src/main/avro/schema-demo_fleet_mgmt_sensors-value-v1.avsc src/main/java/ && echo
 
 	java -jar avro-tools-1.12.0.jar compile schema \
-    src/main/avro/schema-demo_fleet_mgmt_location-value-v1.avsc src/main/java/
+    src/main/avro/schema-demo_fleet_mgmt_location-value-v1.avsc src/main/java/ && echo
 
-	./gradlew clean spotlessApply shadowJar && echo
+	./gradlew clean spotlessApply build
 
 # Upload JAR to MinIO
 .PHONY: upload
-upload: build
+upload:
 	mc cp build/libs/$(JAR_NAME) $(MINIO_BUCKET)/$(JAR_NAME) && echo
 
 # Create the application
-.PHONY: create
-create: upload
+.PHONY: submit
+submit:
 	confluent flink application create -v \
 	--environment $(ENVIRONMENT) --url $(FLINK_URL) $(DEPLOYMENT_FILE) && echo
 
-# Full redeployment (delete -> build -> upload -> create)
-.PHONY: redeploy
-redeploy: delete build upload create
+# Full deployment (build -> upload -> submit)
+.PHONY: create
+create: build upload submit
+
+# Full redeployment (delete -> build -> upload -> submit)
+.PHONY: update
+update: delete build upload submit

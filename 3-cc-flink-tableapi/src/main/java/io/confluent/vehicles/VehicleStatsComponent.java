@@ -24,7 +24,7 @@ public class VehicleStatsComponent implements ApplicationRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VehicleStatsComponent.class);
     private static final String DEMO_FLEET_MGMT_SENSORS = "demo_fleet_mgmt_sensors";
-    private static final String DEMO_FLEET_MGMT_SENSORS_STATS = "demo_fleet_mgmt_vehicle_stats_table_api";
+    private static final String DEMO_FLEET_MGMT_SENSORS_STATS = "demo_fleet_mgmt_vehicle_stats_tableapi";
     private static final String TS_FORMAT = "yyyy_MM_dd_hh_mm_ss";
     private static final int NUMBER_OF_BUCKETS = 1;
     private static final ApiExpression TUMBLE_SIZE = lit(10).minutes();

@@ -5,4 +5,4 @@ all: build
 # Build the JAR (clean, format, and package)
 .PHONY: build
 build:
-	./gradlew clean spotlessApply shadowJar && echo
+	./gradlew clean spotlessApply build
