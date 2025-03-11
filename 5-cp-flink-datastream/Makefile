@@ -3,7 +3,7 @@
 # Variables
 ENVIRONMENT = development
 FLINK_URL = http://localhost:8080
-JAR_NAME = cp-flink-datastream-0.0.1-SNAPSHOT-all.jar
+JAR_NAME = cp-flink-datastream-0.0.2-SNAPSHOT-all.jar
 MINIO_BUCKET = dev-minio/flink
 DEPLOYMENT_FILE ?= deploy-sample-select.json
 APP_NAME = kafka-example

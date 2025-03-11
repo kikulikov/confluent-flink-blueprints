@@ -32,11 +32,11 @@ import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class VehicleStatsComponent2 {
+public class VehicleStatsComponentGen {
 
     private static final String JAAS_STRING =
             "org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';";
-    private static final Logger LOGGER = LoggerFactory.getLogger(VehicleStatsComponent2.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VehicleStatsComponentGen.class);
 
     private static final DateTimeFormatter formatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());

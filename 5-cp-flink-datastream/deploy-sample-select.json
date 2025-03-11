@@ -48,7 +48,7 @@
               "command": [
                 "/bin/sh",
                 "-c",
-                "mc alias set dev-minio http://minio-service.minio-dev.svc.cluster.local:9000 minioadmin minioadmin && mc cp dev-minio/flink/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar /opt/flink/downloads/flink-examples-streaming.jar"
+                "mc alias set dev-minio http://minio-service.minio-dev.svc.cluster.local:9000 minioadmin minioadmin && mc cp dev-minio/flink/cp-flink-datastream-0.0.2-SNAPSHOT-all.jar /opt/flink/downloads/flink-examples-streaming.jar"
               ]
             }
           ]

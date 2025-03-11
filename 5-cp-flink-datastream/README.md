@@ -39,7 +39,7 @@ helm repo add minio-operator https://operator.min.io
 helm install --namespace minio-operator --create-namespace \
 operator minio-operator/operator
 
-mc cp build/libs/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar dev-minio/flink/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar
+mc cp build/libs/cp-flink-datastream-0.0.2-SNAPSHOT-all.jar dev-minio/flink/cp-flink-datastream-0.0.2-SNAPSHOT-all.jar
 
 ```sh
 # Open port forwarding to CMF.
@@ -71,7 +71,7 @@ java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-vehicle-stat
 
 confluent flink application delete --environment development --url http://localhost:8080 kafka-reader-writer-example --force
 ./gradlew clean spotlessApply build
-mc cp build/libs/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar dev-minio/flink/cp-flink-datastream-0.0.1-SNAPSHOT-all.jar
+mc cp build/libs/cp-flink-datastream-0.0.2-SNAPSHOT-all.jar dev-minio/flink/cp-flink-datastream-0.0.2-SNAPSHOT-all.jar
 confluent flink application create --environment development --url http://localhost:8080 deploy-sample-select.json
 ```
 
