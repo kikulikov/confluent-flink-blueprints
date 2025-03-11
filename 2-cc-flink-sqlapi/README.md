@@ -1,7 +1,5 @@
 # Showcase Project for Apache Flink
 
-MONITORING / prometheus
-
 ## Terraform
 
 ```bash

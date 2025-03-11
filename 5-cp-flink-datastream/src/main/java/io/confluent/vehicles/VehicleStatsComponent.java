@@ -71,7 +71,11 @@ public class VehicleStatsComponent implements ApplicationRunner {
         final var deserializationSchema = ConfluentRegistryAvroDeserializationSchema.forSpecific(
                 fleet_mgmt_sensors.class,
                 parameters.get("schema.registry.url"),
-                getRegistryConfigs(parameters.get("basic.auth.user.info")));
+                Map.of(
+                        "basic.auth.credentials.source",
+                        "USER_INFO",
+                        "basic.auth.user.info",
+                        parameters.get("basic.auth.user.info")));
 
         final SerializationSchema<VehicleStats> keySerializationSchema =
                 vehicleStats -> String.valueOf(vehicleStats.getUsageCategory()).getBytes();
@@ -81,7 +85,11 @@ public class VehicleStatsComponent implements ApplicationRunner {
                         VehicleStats.class,
                         parameters.get("out.topic") + "-value",
                         parameters.get("schema.registry.url"),
-                        getRegistryConfigs(parameters.get("basic.auth.user.info")));
+                        Map.of(
+                                "basic.auth.credentials.source",
+                                "USER_INFO",
+                                "basic.auth.user.info",
+                                parameters.get("basic.auth.user.info")));
 
         final var serializationSchema = KafkaRecordSerializationSchema.builder()
                 .setTopic(parameters.get("out.topic"))
@@ -137,10 +145,6 @@ public class VehicleStatsComponent implements ApplicationRunner {
 
         // Execute program, beginning computation.
         env.execute("Kafka Sensors");
-    }
-
-    private static Map<String, String> getRegistryConfigs(String basicAuth) {
-        return Map.of("basic.auth.credentials.source", "USER_INFO", "basic.auth.user.info", basicAuth);
     }
 
     private static ProcessAllWindowFunction<fleet_mgmt_sensors, VehicleStats, TimeWindow> getUsage(
