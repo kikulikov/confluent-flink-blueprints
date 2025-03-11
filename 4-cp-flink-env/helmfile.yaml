@@ -1,6 +1,8 @@
 repositories:
   - name: confluentinc
     url: https://packages.confluent.io/helm
+  - name: incubator
+    url: https://charts.helm.sh/incubator
 
 releases:
   # Install or upgrade the Confluent Manager for Apache Flink.
@@ -15,3 +17,13 @@ releases:
   - name: kubernetes-dashboard
     namespace: kubernetes-dashboard
     chart: kubernetes-dashboard/kubernetes-dashboard
+  # Create `flink` namespace for Flink applications
+  - name: flink-namespace
+    namespace: default       # Deploy this resource from the default namespace
+    chart: incubator/raw     # Use the raw chart to apply plain Kubernetes YAML
+    values:
+      - resources:
+          - apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: flink  # Explicitly create the `flink` namespace
