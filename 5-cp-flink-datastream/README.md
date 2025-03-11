@@ -58,12 +58,6 @@ confluent flink application web-ui-forward --environment development kafka-reade
 confluent flink application delete --environment development basic-example --url http://localhost:8080
 ```
 
-## TODO
-
-- Unit Tests
-- IT Tests
-- Run scripts / profiles
-
 ```shell
 java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_mgmt_sensors-value-v1.avsc src/main/java/
 java -jar avro-tools-1.12.0.jar compile schema src/main/avro/schema-demo_fleet_mgmt_location-value-v1.avsc src/main/java/
@@ -73,6 +67,12 @@ confluent flink application delete --environment development --url http://localh
 ./gradlew clean spotlessApply build
 mc cp build/libs/cp-flink-datastream-0.0.2-SNAPSHOT-all.jar dev-minio/flink/cp-flink-datastream-0.0.2-SNAPSHOT-all.jar
 confluent flink application create --environment development --url http://localhost:8080 deploy-sample-select.json
+```
+
+```shell
+
+kubectl port-forward -n flink svc/kafka-example-rest 8081:8081
+ 
 ```
 
 ## Resources

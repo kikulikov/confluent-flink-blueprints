@@ -32,6 +32,6 @@ DataStream API, deployed on a local Kubernetes cluster.
 
 - Monitoring CC / use Prometheus CC
 - Terraform profiles for (1) and (2)
-- Helmfile and TF for (4)
+- ~~Helmfile and TF for (4)~~
 - Unit and integration tests for Table API (3)
 - Unit and integration tests for DataStream API (5)

@@ -1,0 +1,17 @@
+repositories:
+  - name: confluentinc
+    url: https://packages.confluent.io/helm
+
+releases:
+  # Install or upgrade the Confluent Manager for Apache Flink.
+  - name: confluent-manager-for-flink
+    namespace: flink-manager
+    chart: confluentinc/confluent-manager-for-apache-flink
+  # Install or upgrade the Flink Kubernetes Operator.
+  - name: cp-flink-kubernetes-operator
+    namespace: flink-operator
+    chart: confluentinc/flink-kubernetes-operator
+  # Install or upgrade the Kubernetes Dashboard.
+  - name: kubernetes-dashboard
+    namespace: kubernetes-dashboard
+    chart: kubernetes-dashboard/kubernetes-dashboard

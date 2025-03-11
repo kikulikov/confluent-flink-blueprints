@@ -49,13 +49,6 @@ FLINK_API_KEY=XXX
 FLINK_API_SECRET=YYY
 ```
 
-## TODO
-
-- Unit Tests
-- IT Tests
-- Run scripts
-- Spring profiles
-
 ## Resources
 
 https://docs.confluent.io/cloud/current/flink/reference/table-api.html
