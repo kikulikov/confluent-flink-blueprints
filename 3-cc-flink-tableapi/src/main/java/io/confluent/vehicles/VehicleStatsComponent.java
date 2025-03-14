@@ -23,13 +23,14 @@ import org.springframework.stereotype.Component;
 public class VehicleStatsComponent implements ApplicationRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VehicleStatsComponent.class);
-    private static final String DEMO_FLEET_MGMT_SENSORS = "demo_fleet_mgmt_sensors";
-    private static final String DEMO_FLEET_MGMT_SENSORS_STATS = "demo_fleet_mgmt_vehicle_stats_tableapi";
+    protected static final String DEMO_FLEET_MGMT_SENSORS = "demo_fleet_mgmt_sensors";
+    protected static final String DEMO_FLEET_VEHICLE_STATS = "demo_fleet_vehicle_stats_tableapi";
+
+    private static final ApiExpression TUMBLE_SIZE = lit(10).minutes();
     private static final String TS_FORMAT = "yyyy_MM_dd_hh_mm_ss";
     private static final int NUMBER_OF_BUCKETS = 1;
-    private static final ApiExpression TUMBLE_SIZE = lit(10).minutes();
 
-    private static final Schema STATS_SCHEMA = Schema.newBuilder()
+    static final Schema STATS_SCHEMA = Schema.newBuilder()
             .column("usage_category", DataTypes.STRING().notNull())
             .column("vehicle_count", DataTypes.BIGINT())
             .column("window_start", DataTypes.STRING())
@@ -45,7 +46,7 @@ public class VehicleStatsComponent implements ApplicationRunner {
             .build();
 
     @Autowired
-    private TableEnvironment tableEnvironment;
+    protected TableEnvironment tableEnvironment;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -86,7 +87,7 @@ public class VehicleStatsComponent implements ApplicationRunner {
         final var tableResult = processHigh
                 .unionAll(processNormal)
                 .unionAll(processLow)
-                .insertInto(DEMO_FLEET_MGMT_SENSORS_STATS)
+                .insertInto(DEMO_FLEET_VEHICLE_STATS)
                 .execute();
 
         LOGGER.info("Statement ID: {}", ConfluentTools.getStatementName(tableResult));
@@ -103,9 +104,9 @@ public class VehicleStatsComponent implements ApplicationRunner {
 
     public void ensureTableExists() {
         if (Arrays.stream(tableEnvironment.listTables())
-                .noneMatch(name -> name.equals(DEMO_FLEET_MGMT_SENSORS_STATS))) {
+                .noneMatch(name -> name.equals(DEMO_FLEET_VEHICLE_STATS))) {
 
-            tableEnvironment.createTable(DEMO_FLEET_MGMT_SENSORS_STATS, STATS_DESCRIPTOR);
+            tableEnvironment.createTable(DEMO_FLEET_VEHICLE_STATS, STATS_DESCRIPTOR);
 
             try {
                 Thread.sleep(Duration.ofSeconds(30).toMillis());
